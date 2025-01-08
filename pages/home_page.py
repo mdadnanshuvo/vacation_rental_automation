@@ -1,4 +1,5 @@
 # pages/home_page.py
+
 from .base_page import BasePage
 from selenium.webdriver.common.by import By
 from config.locations import get_random_location
@@ -15,71 +16,122 @@ class HomePage(BasePage):
         # Type location character by character
         for char in location:
             search_box.send_keys(char)
-            time.sleep(0.5)  # 300ms delay between each character
+            time.sleep(0.3)
         
-        time.sleep(5)  # Wait for final suggestions to load
+        time.sleep(2)  # Wait for suggestions to load
         
         try:
             # Wait for suggestions list
             suggestions_list = self.wait_for_element(
                 By.XPATH, 
-                "//ul[@id='js-search-items']"
+                "//ul[@id='js-search-items']",
+                timeout=10
             )
             
-            # Find all suggestion items
+            # Get all suggestions
             suggestions = suggestions_list.find_elements(
                 By.XPATH,
                 ".//li[contains(@class, 'google-auto-suggestion-list')]"
             )
             
-            time.sleep(5)  # Additional wait for suggestions to fully load
+            time.sleep(1)
             
-            # Filter out any empty/invalid suggestions
-            valid_suggestions = [
-                suggestion for suggestion in suggestions 
-                if suggestion.get_attribute("data-place").strip()
-            ]
-            
-            if valid_suggestions:
-                # Select a random valid suggestion
-                random_suggestion = random.choice(valid_suggestions)
-                # Scroll the suggestion into view before clicking
-                self.driver.execute_script("arguments[0].scrollIntoView(true);", random_suggestion)
-                time.sleep(0.5)  # Brief pause after scrolling
+            if suggestions:
+                # Select random suggestion
+                random_suggestion = random.choice(suggestions)
+                suggestion_text = random_suggestion.find_element(By.CLASS_NAME, "suggested-place").text
+                print(f"Selected location: {suggestion_text}")
                 random_suggestion.click()
-                time.sleep(2)  # Wait for selection to process
+                time.sleep(1.5)
             else:
-                raise Exception("No valid location suggestions found")
+                raise Exception("No suggestions found")
                 
         except Exception as e:
             print(f"Error selecting location: {str(e)}")
-            # Handle the error appropriately - maybe try again or use a default value
 
     def select_dates(self):
-        check_in_date, check_out_date = get_random_date_range()
-        
-        # Open the date picker
-        date_display = self.wait_for_element(By.XPATH, "//input[@id='js-date-range-display']")
-        date_display.click()
-        
-        time.sleep(5)  # Wait for the calendar to appear
-        
-        # Select the check-in date
-        check_in_day = int(check_in_date.split('-')[2])
-        check_in_day_xpath = f"//td[contains(@class, 'datepicker__month-day--valid') and text()='{check_in_day}']"
-        self.wait_for_element(By.XPATH, check_in_day_xpath).click()
-        
-        # Select the check-out date
-        check_out_day = int(check_out_date.split('-')[2])
-        check_out_day_xpath = f"//td[contains(@class, 'datepicker__month-day--valid') and text()='{check_out_day}']"
-        self.wait_for_element(By.XPATH, check_out_day_xpath).click()
-        
-        # Click the continue button
-        continue_button = self.wait_for_element(By.XPATH, "//button[@id='js-date-select']")
-        continue_button.click()
-        time.sleep(2)  # Wait for the date selection to be processed
+        try:
+            check_in_date, check_out_date = get_random_date_range()
+            print(f"Generated dates - Check-in: {check_in_date}, Check-out: {check_out_date}")
+            
+            # Wait for and click date input to open calendar
+            date_input = self.wait_for_element(
+                By.XPATH, 
+                "//input[@id='js-date-range-display']",
+                timeout=10
+            )
+            self.driver.execute_script("arguments[0].click();", date_input)
+            time.sleep(1.5)  # Increased wait time for calendar to fully load
+            
+            # Get check-in date components
+            check_in_day = int(check_in_date.split('-')[2])
+            check_in_month = int(check_in_date.split('-')[1])
+            check_in_year = int(check_in_date.split('-')[0])
+            
+            # Get check-out date components
+            check_out_day = int(check_out_date.split('-')[2])
+            check_out_month = int(check_out_date.split('-')[1])
+            check_out_year = int(check_out_date.split('-')[0])
+            
+            # Select check-in date with more specific XPath
+            check_in_xpath = (
+                f"//td[contains(@class, 'datepicker__month-day--valid') and "
+                f"not(contains(@class, 'datepicker__month-day--disabled')) and "
+                f"normalize-space(text())='{check_in_day}'"
+                f"]"
+            )
+            
+            check_in_element = self.wait_for_element(By.XPATH, check_in_xpath)
+            self.driver.execute_script("arguments[0].click();", check_in_element)
+            time.sleep(1)
+            
+            # Select check-out date with more specific XPath
+            check_out_xpath = (
+                f"//td[contains(@class, 'datepicker__month-day--valid') and "
+                f"not(contains(@class, 'datepicker__month-day--disabled')) and "
+                f"normalize-space(text())='{check_out_day}'"
+                f"]"
+            )
+            
+            check_out_element = self.wait_for_element(By.XPATH, check_out_xpath)
+            self.driver.execute_script("arguments[0].click();", check_out_element)
+            time.sleep(1)
+            
+            # Click the continue button
+            continue_button = self.wait_for_element(By.XPATH, "//button[@id='js-date-select']", timeout=10)
+            self.driver.execute_script("arguments[0].click();", continue_button)
+            time.sleep(1.5)
+            
+            # Verify if we moved to the next page
+            try:
+                self.wait_for_any_element([
+                    (By.XPATH, "//div[contains(@class, 'refine-page')]"),
+                    (By.XPATH, "//div[contains(@class, 'hybrid-page')]")
+                ], timeout=10)
+                print("Successfully navigated to results page")
+            except:
+                print("Failed to navigate to results page")
+                raise Exception("Navigation failed after date selection")
+                
+        except Exception as e:
+            print(f"Error selecting dates: {str(e)}")
+            raise  # Re-raise the exception to handle it in the calling code
+
+    def wait_for_any_element(self, locator_list, timeout=10):
+        """Wait for any of the specified elements to be present."""
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            for by, locator in locator_list:
+                try:
+                    element = self.driver.find_element(by, locator)
+                    if element.is_displayed():
+                        return element
+                except:
+                    continue
+            time.sleep(0.5)
+        raise Exception(f"None of the expected elements found within {timeout} seconds")
 
     def click_search_button(self):
         search_button = self.wait_for_element(By.XPATH, "//div[@id='js-btn-search']")
-        search_button.click()
+        self.driver.execute_script("arguments[0].click();", search_button)
         time.sleep(2)  # Wait for the search results to load
