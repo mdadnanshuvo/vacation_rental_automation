@@ -12,7 +12,7 @@ class RefinePage(BasePage):
     def check_property_tiles(self, num_properties=20):
         try:
             # Increase the timeout for finding elements
-            timeout = 30
+            timeout = 45
 
             # Find property tiles on the Refine page
             print("Waiting for property tiles to load...")
@@ -31,16 +31,16 @@ class RefinePage(BasePage):
                     self.driver.switch_to.window(self.driver.window_handles[-1])
                     
                     # Wait for the Hybrid page to load
-                    self.wait_for_element(By.XPATH, "//div[@id='js-date-available'], //div[@id='js-date-unavailable']", timeout=timeout)
+                    print("Waiting for the Hybrid page to load...")
+                    self.wait_for_element(By.XPATH, "//div[@id='js-date-available'] | //div[@id='js-date-unavailable']", timeout=timeout)
                     time.sleep(5)  # Additional wait for the page to fully load
 
                     # Check property availability
                     hybrid_page = HybridPage(self.driver, source_page="refine")
                     hybrid_page.check_property_availability()
-                    time.sleep(2)  # Wait for any post-check actions to complete
-                    hybrid_page.return_to_previous_page()
 
                     # Close the property window and return to Refine page
+                    print("Closing property window and returning to Refine page...")
                     self.driver.close()
                     self.driver.switch_to.window(self.driver.window_handles[0])
 
@@ -53,3 +53,20 @@ class RefinePage(BasePage):
 
         except Exception as e:
             print(f"Error checking property tiles on Refine page: {str(e)}")
+
+    def wait_for_elements(self, by, value, timeout=10):
+        """Wait for multiple elements to be present and visible."""
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        
+        try:
+            elements = WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_all_elements_located((by, value))
+            )
+            WebDriverWait(self.driver, timeout).until(
+                EC.visibility_of_all_elements_located((by, value))
+            )
+            return elements
+        except Exception as e:
+            print(f"Error waiting for elements: {str(e)}")
+            raise
