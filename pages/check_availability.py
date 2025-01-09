@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 import time
 
 class PropertyPage(BasePage):
-    def validate_property_availability(self):
+    def validate_property_availability(self, visit_count):
         try:
             # Wait for any of the availability status elements without clicking any buttons
             availability_text = self.wait_for_any_element(
@@ -25,6 +25,8 @@ class PropertyPage(BasePage):
             print(f"Error validating property availability: {str(e)}")
             raise
 
+        
+
     def wait_for_any_element(self, locator_list, timeout=10):
         """Wait for any of the specified elements to be present."""
         start_time = time.time()
@@ -38,3 +40,5 @@ class PropertyPage(BasePage):
                     continue
             time.sleep(0.5)
         raise Exception(f"None of the expected elements found within {timeout} seconds")
+
+   

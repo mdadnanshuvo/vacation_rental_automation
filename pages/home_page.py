@@ -108,7 +108,7 @@ class HomePage(BasePage):
             if page_layout == "Hybrid":
                 hybrid_page = HybridPage(self.driver)
                 hybrid_page.check_property_availability()
-                hybrid_page.return_to_home_page()
+                hybrid_page.return_to_previous_page()
                 self.filter_on_home_page()
                 
         except Exception as e:
