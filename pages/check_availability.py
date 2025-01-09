@@ -1,29 +1,26 @@
 # pages/check_availability.py
 
-import time
 from .base_page import BasePage
 from selenium.webdriver.common.by import By
+import time
 
 class PropertyPage(BasePage):
     def validate_property_availability(self):
         try:
-            check_availability_button = self.wait_for_element(By.XPATH, "//button[@id='js-btn-check-availability']", timeout=10)
-            self.driver.execute_script("arguments[0].click();", check_availability_button)
-            time.sleep(2)  # Wait for availability check
-            
+            # Wait for any of the availability status elements without clicking any buttons
             availability_text = self.wait_for_any_element(
                 [
-                    (By.ID, "js-date-available"),
-                    (By.ID, "js-date-unavailable")
+                    (By.XPATH, "//div[@id='js-date-available']"),
+                    (By.XPATH, "//div[@id='js-date-unavailable']")
                 ],
                 timeout=10
             )
-            
+
             if availability_text.get_attribute("id") == "js-date-available":
                 print("Dates selected are available")
             else:
                 print("Dates selected are unavailable")
-                
+
         except Exception as e:
             print(f"Error validating property availability: {str(e)}")
             raise
