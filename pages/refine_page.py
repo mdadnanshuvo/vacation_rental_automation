@@ -1,3 +1,5 @@
+# pages/search_results_page.py
+
 from .base_page import BasePage
 from selenium.webdriver.common.by import By
 import time
@@ -39,7 +41,7 @@ class SearchResultsPage(BasePage):
         time.sleep(2)
         self.driver.switch_to.window(self.driver.window_handles[-1])
 
-        from .property_page import PropertyPage
+        from .check_availability import PropertyPage
         PropertyPage(self.driver).validate_property_availability()
 
         self.driver.close()

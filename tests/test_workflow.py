@@ -1,7 +1,9 @@
+# tests/test_workflow.py
+
 import unittest
 from selenium import webdriver
-from workflow import Workflow
-from settings import BASE_URL
+from pages.workflow import Workflow
+from config.settings import BASE_URL
 
 class TestWorkflow(unittest.TestCase):
     @classmethod
@@ -21,3 +23,6 @@ class TestWorkflow(unittest.TestCase):
             print("Workflow executed successfully.")
         except Exception as e:
             self.fail(f"Workflow execution failed: {e}")
+
+if __name__ == "__main__":
+    unittest.main()

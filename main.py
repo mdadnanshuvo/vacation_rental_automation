@@ -1,7 +1,13 @@
 # main.py
 
 import unittest
-from tests.test_homepage_interaction import TestHomepageInteraction
+from tests.test_hybrid_page_interaction import TestHybridPageInteraction
+
+def suite():
+    test_suite = unittest.TestSuite()
+    test_suite.addTest(unittest.makeSuite(TestHybridPageInteraction))
+    return test_suite
 
 if __name__ == "__main__":
-    unittest.main()
+    runner = unittest.TextTestRunner()
+    runner.run(suite())

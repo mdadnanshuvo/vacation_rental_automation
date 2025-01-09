@@ -9,6 +9,7 @@ class TestHomepageInteraction(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
         self.driver.get(settings.BASE_URL)
+        self.driver.maximize_window()
 
     def test_search_location_and_dates(self):
         home_page = HomePage(self.driver)
@@ -16,8 +17,11 @@ class TestHomepageInteraction(unittest.TestCase):
         home_page.select_dates()
         home_page.click_search_button()
 
-        # Verify that the refine page is loaded
-        self.assertIn("/refine", self.driver.current_url)
+        # Verify that the refine page or hybrid page is loaded
+        self.assertTrue(
+            "/refine" in self.driver.current_url or "/hybrid" in self.driver.current_url,
+            "Neither refine nor hybrid page loaded"
+        )
 
     def tearDown(self):
         self.driver.quit()

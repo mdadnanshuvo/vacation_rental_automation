@@ -1,6 +1,8 @@
+# pages/workflow.py
+
 from pages.home_page import HomePage
-from pages.search_results_page import SearchResultsPage
-from settings import BASE_URL
+from refine_page import SearchResultsPage
+from config.settings import BASE_URL
 
 class Workflow:
     def __init__(self, driver):

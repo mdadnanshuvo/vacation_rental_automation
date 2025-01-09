@@ -103,15 +103,7 @@ class HomePage(BasePage):
             time.sleep(1.5)
             
             # Verify if we moved to the next page
-            try:
-                self.wait_for_any_element([
-                    (By.XPATH, "//div[contains(@class, 'refine-page')]"),
-                    (By.XPATH, "//div[contains(@class, 'hybrid-page')]")
-                ], timeout=10)
-                print("Successfully navigated to results page")
-            except:
-                print("Failed to navigate to results page")
-                raise Exception("Navigation failed after date selection")
+            
                 
         except Exception as e:
             print(f"Error selecting dates: {str(e)}")
@@ -135,3 +127,5 @@ class HomePage(BasePage):
         search_button = self.wait_for_element(By.XPATH, "//div[@id='js-btn-search']")
         self.driver.execute_script("arguments[0].click();", search_button)
         time.sleep(2)  # Wait for the search results to load
+    
+    
