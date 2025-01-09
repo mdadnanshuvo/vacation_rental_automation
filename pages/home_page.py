@@ -1,7 +1,10 @@
+# pages/home_page.py
+
 from .base_page import BasePage
 from selenium.webdriver.common.by import By
 from config.locations import get_random_location
 from utils.date_utils import get_random_date_range
+from .hybrid_page import HybridPage  # Import HybridPage
 import random
 import time
 
@@ -103,8 +106,9 @@ class HomePage(BasePage):
             # Check the page layout type
             page_layout = self.get_page_layout()
             if page_layout == "Hybrid":
-                self.check_availability()
-                self.driver.back()  # Navigate back to the home page
+                hybrid_page = HybridPage(self.driver)
+                hybrid_page.check_property_availability()
+                hybrid_page.return_to_home_page()
                 self.filter_on_home_page()
                 
         except Exception as e:
@@ -120,30 +124,6 @@ class HomePage(BasePage):
         except Exception as e:
             print(f"Error retrieving page layout: {str(e)}")
             return None
-
-    def check_availability(self):
-        """Check property availability on the Hybrid page."""
-        try:
-            check_availability_button = self.wait_for_element(By.XPATH, "//button[@id='js-btn-check-availability']", timeout=10)
-            self.driver.execute_script("arguments[0].click();", check_availability_button)
-            time.sleep(2)  # Wait for availability check
-            
-            availability_text = self.wait_for_any_element(
-                [
-                    (By.ID, "js-date-available"),
-                    (By.ID, "js-date-unavailable")
-                ],
-                timeout=10
-            )
-            
-            if availability_text.get_attribute("id") == "js-date-available":
-                print("Dates selected are available")
-            else:
-                print("Dates selected are unavailable")
-                
-        except Exception as e:
-            print(f"Error checking availability: {str(e)}")
-            raise
 
     def wait_for_any_element(self, locator_list, timeout=10):
         """Wait for any of the specified elements to be present."""

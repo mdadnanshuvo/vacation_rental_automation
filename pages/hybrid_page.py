@@ -9,10 +9,6 @@ import time
 class HybridPage(BasePage):
     def check_property_availability(self):
         try:
-            # Check for the availability status element
-            availability_element = self.wait_for_element(By.XPATH, "//div[@class='availability-status']")
-            print("Property availability checked on hybrid page.")
-            
             # Use PropertyPage class to validate property availability
             property_page = PropertyPage(self.driver)
             property_page.validate_property_availability()
