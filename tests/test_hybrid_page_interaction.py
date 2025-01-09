@@ -5,8 +5,9 @@ from selenium import webdriver
 from config import settings
 from pages.home_page import HomePage
 from pages.hybrid_page import HybridPage
+from pages.refine_page import RefinePage
 
-class TestHybridPageInteraction(unittest.TestCase):
+class TestPageInteraction(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
         self.driver.get(settings.BASE_URL)
@@ -19,14 +20,27 @@ class TestHybridPageInteraction(unittest.TestCase):
         home_page.select_dates()
         home_page.click_search_button()
 
-        # Check if the current page is the hybrid page
-        if "/hybrid" in self.driver.current_url:
-            hybrid_page = HybridPage(self.driver)
+        # Determine the current page and proceed accordingly
+        current_url = self.driver.current_url
+        if "/hybrid" in current_url:
+            hybrid_page = HybridPage(self.driver, source_page="home")
             hybrid_page.check_property_availability()
-            hybrid_page.return_to_home_page()
+            hybrid_page.return_to_previous_page()
             self.assertIn(settings.BASE_URL, self.driver.current_url, "Failed to return to the home page")
+        elif "/refine" in current_url:
+            refine_page = RefinePage(self.driver)
+            refine_page.check_property_tiles(num_properties=1)
+
+            # After interacting with refine page, check if it navigates to hybrid page
+            if "/hybrid" in self.driver.current_url:
+                hybrid_page = HybridPage(self.driver, source_page="refine")
+                hybrid_page.check_property_availability()
+                hybrid_page.return_to_previous_page()
+                self.assertIn("/refine", self.driver.current_url, "Failed to return to the refine page")
+            else:
+                self.fail("Did not navigate to the hybrid page after refine interaction")
         else:
-            self.fail("Did not navigate to the hybrid page")
+            self.fail("Did not navigate to a known page")
 
     def tearDown(self):
         self.driver.quit()

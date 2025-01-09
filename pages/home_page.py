@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from config.locations import get_random_location
 from utils.date_utils import get_random_date_range
 from .hybrid_page import HybridPage  # Import HybridPage
+from .refine_page import RefinePage  # Import RefinePage
 import random
 import time
 
@@ -50,7 +51,7 @@ class HomePage(BasePage):
         except Exception as e:
             print(f"Error selecting location: {str(e)}")
 
-    def select_dates(self):
+    def select_dates(self, source_page="home"):
         try:
             check_in_date, check_out_date = get_random_date_range()
             print(f"Generated dates - Check-in: {check_in_date}, Check-out: {check_out_date}")
@@ -106,10 +107,14 @@ class HomePage(BasePage):
             # Check the page layout type
             page_layout = self.get_page_layout()
             if page_layout == "Hybrid":
-                hybrid_page = HybridPage(self.driver)
+                hybrid_page = HybridPage(self.driver, source_page=source_page)
                 hybrid_page.check_property_availability()
                 hybrid_page.return_to_previous_page()
-                self.filter_on_home_page()
+                if source_page == "home":
+                    self.filter_on_home_page()
+            elif page_layout == "Refine":
+                refine_page = RefinePage(self.driver)
+                refine_page.check_property_tiles()
                 
         except Exception as e:
             print(f"Error selecting dates: {str(e)}")
@@ -140,9 +145,12 @@ class HomePage(BasePage):
         raise Exception(f"None of the expected elements found within {timeout} seconds")
 
     def click_search_button(self):
-        search_button = self.wait_for_element(By.XPATH, "//div[@id='js-btn-search']")
-        self.driver.execute_script("arguments[0].click();", search_button)
-        time.sleep(2)  # Wait for the search results to load
+        try:
+            search_button = self.wait_for_element(By.XPATH, "//div[@id='js-btn-search']", timeout=20)
+            self.driver.execute_script("arguments[0].click();", search_button)
+            time.sleep(2)  # Wait for the search results to load
+        except Exception as e:
+            print(f"Error clicking search button: {str(e)}")
 
     def filter_on_home_page(self):
         """Continue filtering on the home page after checking availability."""
