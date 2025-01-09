@@ -4,7 +4,7 @@ from .base_page import BasePage
 from selenium.webdriver.common.by import By
 import time
 
-class SearchResultsPage(BasePage):
+class RefinePage(BasePage):
     def validate_properties(self, properties_checked, max_properties_to_check):
         visited_properties = set()
         properties_validated = 0

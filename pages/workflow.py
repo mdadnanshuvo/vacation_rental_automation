@@ -1,38 +1,55 @@
-# pages/workflow.py
+from .base_page import BasePage
+from .home_page import HomePage
+from .hybrid_page import HybridPage
+from .refine_page import RefinePage  # Assuming you have a RefinePage class
 
-from pages.home_page import HomePage
-from refine_page import SearchResultsPage
-from config.settings import BASE_URL
-
-class Workflow:
-    def __init__(self, driver):
-        self.driver = driver
-        self.home_page = HomePage(driver)
-        self.search_results_page = SearchResultsPage(driver)
-
+class Workflow(BasePage):
     def run(self):
-        self.driver.get(BASE_URL)  # Navigate to the home page at the start
-        self.driver.maximize_window()
-        
-        refine_page_visited = False
-        properties_checked = 0
-        max_properties_to_check = 20
+        home_page = HomePage(self.driver)
+        home_page.search_location()
+        home_page.select_dates()
+        home_page.click_search_button()
 
-        while properties_checked < max_properties_to_check:
-            self.home_page.search_location()
-            self.home_page.select_dates()
+        # Check the ScriptData.pageLayout to determine the page type
+        script_data = self.driver.execute_script("return ScriptData;")
+        page_layout = script_data.get("pageLayout", "")
 
-            if self.home_page.is_hybrid_page():
-                print("Navigated to hybrid page.")
-                self.home_page.return_to_home_page()
-            elif self.home_page.is_refine_page():
-                print("Navigated to refine page.")
-                refine_page_visited = True
-                properties_checked += self.search_results_page.validate_properties(properties_checked, max_properties_to_check)
+        print(f"Page Layout: {page_layout}")
+
+        if page_layout == "Hybrid":
+            print("This is a Hybrid page.")
+            hybrid_page = HybridPage(self.driver)
+            hybrid_page.check_property_availability()
+            hybrid_page.return_to_home_page()
+            print("Returned to the home page.")
+            
+            # Verify if we are back to the home page
+            if BASE_URL in self.driver.current_url:
+                print("Successfully returned to the home page.")
             else:
-                raise Exception("Unexpected navigation behavior.")
+                raise Exception("Failed to return to the home page.")
 
-            if refine_page_visited and properties_checked >= max_properties_to_check:
-                break
+        elif page_layout == "Refine":
+            print("This is a Refine page.")
+            refine_page = RefinePage(self.driver)
+            refine_page.perform_refinement_actions()
+            print("Refinement actions completed.")
 
-        print(f"Workflow completed. {properties_checked} properties validated.")
+        else:
+            print(f"Unexpected Page Layout: {page_layout}")
+
+        print("Workflow run completed.")
+
+if __name__ == "__main__":
+    # Add code to initialize WebDriver and run the workflow
+    from selenium import webdriver
+    from config.settings import BASE_URL  # Assuming BASE_URL is defined in your settings
+
+    driver = webdriver.Chrome()  # Replace with your WebDriver
+    driver.get(BASE_URL)  # Use the base URL from settings
+    driver.maximize_window()
+
+    workflow = Workflow(driver)
+    workflow.run()
+
+    driver.quit()
