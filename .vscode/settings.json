@@ -1,6 +1,7 @@
 {
   "python.analysis.extraPaths": [
     "./config",
-    "./pages"
+    "./pages",
+    "./utils"
   ]
 }
