@@ -11,7 +11,7 @@ class TestPageInteraction(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
         self.driver.get(settings.BASE_URL)
-        self.driver.maximize_window()
+        
 
     def test_check_property_availability_and_return(self):
         # Navigate to the home page and perform a search

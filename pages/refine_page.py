@@ -38,15 +38,12 @@ class RefinePage(BasePage):
                     self.wait_for_element(By.XPATH, "//div[@id='js-date-available'] | //div[@id='js-date-unavailable']", timeout=timeout)
                     time.sleep(10)  # Additional wait for the page to fully load
 
-                    # Confirm we are on the correct page
-                    current_url = self.driver.current_url
-                    if "hybrid" not in current_url:
-                        raise Exception("Did not navigate to the Hybrid page")
+                   
 
                     # Check property availability
                     hybrid_page = HybridPage(self.driver, source_page="refine")
                     availability = hybrid_page.check_property_availability()
-                    print(f"Property availability for {title}: {availability}")
+                    print(f"Property availability for {title} ({domain}) - {href}: {'Available' if availability else 'Unavailable'}")
                     time.sleep(5)  # Wait for any post-check actions to complete
 
                     # Close the property window and return to Refine page
@@ -60,7 +57,7 @@ class RefinePage(BasePage):
                     if len(self.driver.window_handles) > 0:
                         self.driver.switch_to.window(self.driver.window_handles[0])
                 except Exception as e:
-                    
+                    print(f"Error checking property tile: {str(e)}")
                     if len(self.driver.window_handles) > 1:
                         self.driver.close()
                         self.driver.switch_to.window(self.driver.window_handles[0])

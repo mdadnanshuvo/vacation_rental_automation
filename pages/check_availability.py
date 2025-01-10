@@ -17,13 +17,13 @@ class PropertyPage(BasePage):
             )
 
             if availability_text.get_attribute("id") == "js-date-available":
-                print("Dates selected are available")
+                return True  # Dates selected are available
             else:
-                print("Dates selected are unavailable")
+                return False  # Dates selected are unavailable
 
         except Exception as e:
-           pass
-            
+            print(f"Error validating property availability: {str(e)}")
+            return False  # Handle exceptions by returning False
 
     def wait_for_any_element(self, locator_list, timeout=10):
         """Wait for any of the specified elements to be present."""
