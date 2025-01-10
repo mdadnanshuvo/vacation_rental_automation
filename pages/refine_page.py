@@ -38,8 +38,6 @@ class RefinePage(BasePage):
                     self.wait_for_element(By.XPATH, "//div[@id='js-date-available'] | //div[@id='js-date-unavailable']", timeout=timeout)
                     time.sleep(10)  # Additional wait for the page to fully load
 
-                   
-
                     # Check property availability
                     hybrid_page = HybridPage(self.driver, source_page="refine")
                     availability = hybrid_page.check_property_availability()
@@ -62,6 +60,10 @@ class RefinePage(BasePage):
                         self.driver.close()
                         self.driver.switch_to.window(self.driver.window_handles[0])
 
+            # Close all remaining windows and end the WebDriver session
+            self.close_all_windows()
+            self.end_test()
+
         except Exception as e:
             print(f"Error checking property tiles on Refine page: {str(e)}")
 
@@ -81,3 +83,17 @@ class RefinePage(BasePage):
         except Exception as e:
             print(f"Error waiting for elements: {str(e)}")
             raise
+    
+    def close_all_windows(self):
+        """Close all browser windows."""
+        print("Closing all browser windows...")
+        while len(self.driver.window_handles) > 0:
+            self.driver.switch_to.window(self.driver.window_handles[-1])
+            self.driver.close()
+        print("All browser windows closed.")
+
+    def end_test(self):
+        """End the WebDriver session."""
+        print("Ending the WebDriver session...")
+        self.driver.quit()
+        print("WebDriver session ended.")
