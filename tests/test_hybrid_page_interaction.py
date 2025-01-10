@@ -1,5 +1,3 @@
-# tests/test_hybrid_page_interaction.py
-
 import unittest
 from selenium import webdriver
 from config import settings

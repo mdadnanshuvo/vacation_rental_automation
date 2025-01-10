@@ -6,3 +6,5 @@ fake = Faker()
 
 def get_random_location():
     return fake.city()
+
+
