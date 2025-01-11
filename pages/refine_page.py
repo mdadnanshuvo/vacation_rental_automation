@@ -2,7 +2,7 @@ import os
 from .base_page import BasePage
 from .hybrid_page import HybridPage
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchWindowException, InvalidSessionIdException
+from selenium.common.exceptions import NoSuchWindowException
 import time
 from urllib.parse import urlparse
 from utils.excel_utils import append_to_excel_file, ensure_data_folder_exists, create_excel_file, EXCEL_FILE_PATH
@@ -19,17 +19,6 @@ class RefinePage(BasePage):
         if not os.path.exists(EXCEL_FILE_PATH):
             create_excel_file()
 
-    def cleanup_all_windows(self):
-        """Closes all browser windows."""
-        try:
-            print("Closing all browser windows...")
-            while len(self.driver.window_handles) > 0:
-                self.driver.switch_to.window(self.driver.window_handles[-1])
-                self.driver.close()
-            print("All browser windows closed.")
-        except Exception as e:
-            print(f"Error while closing browser windows: {str(e)}")
-
     def check_property_tiles(self):
         """
         Checks the availability of all property tiles on the Refine page and logs the results.
@@ -44,9 +33,11 @@ class RefinePage(BasePage):
                 print(f"Total property tiles found: {total_tiles}")
             except Exception as e:
                 print(f"Error fetching property tile count: {str(e)}")
-                total_tiles = 3  # Fallback to default
+                total_tiles = 10  # Fallback to default
 
             num_checked = 0
+            checked_tiles = set()  # Track tiles already processed
+
             while num_checked < total_tiles:
                 print(f"Waiting for property tiles to load... Checking tile {num_checked + 1} of {total_tiles}.")
                 time.sleep(5)  # Allow tiles to load
@@ -56,19 +47,24 @@ class RefinePage(BasePage):
                     By.XPATH, "//div[contains(@class, 'property-tiles')]//div[contains(@class, 'title')]//a", timeout=60
                 )
 
-                # Iterate over visible tiles and test until total_tiles is reached
                 for tile in property_tiles:
                     if num_checked >= total_tiles:
-                        break  # Stop if we’ve already checked all tiles
+                        break  # Stop if all tiles are processed
 
                     try:
                         href = tile.get_attribute("href")
                         title = tile.text
+
+                        # Skip already processed tiles
+                        if href in checked_tiles:
+                            continue
+
                         if not href or not title:
                             print("Invalid tile data; skipping...")
                             continue
 
                         print(f"Opening property: {title} ({href})")
+                        checked_tiles.add(href)  # Mark this tile as processed
                         time.sleep(5)  # Delay before opening the new tab
                         self.driver.execute_script("window.open(arguments[0], '_blank');", href)
                         self.driver.switch_to.window(self.driver.window_handles[-1])
@@ -106,18 +102,12 @@ class RefinePage(BasePage):
                         self.driver.switch_to.window(self.driver.window_handles[0])
 
                         num_checked += 1
-                    except NoSuchWindowException as e:
-                        print(f"Window closed unexpectedly: {str(e)}")
-                        if len(self.driver.window_handles) > 0:
-                            self.driver.switch_to.window(self.driver.window_handles[0])
                     except Exception as e:
-                        print(f"Error checking property tile: {str(e)}")
-                        if len(self.driver.window_handles) > 1:
-                            self.driver.close()
-                            self.driver.switch_to.window(self.driver.window_handles[0])
+                        print(f"Error processing property tile: {str(e)}")
+                        print("Waiting before retrying...")
+                        time.sleep(10)  # Wait before retrying
+                        self.driver.switch_to.window(self.driver.window_handles[0])  # Ensure focus returns to the Refine page
 
-            print("Finished checking all property tiles. Cleaning up...")
+            print("Finished checking all property tiles.")
         except Exception as e:
             print(f"Error during property tile check: {str(e)}")
-        finally:
-            self.cleanup_all_windows()  # Ensure all browser windows are closed
