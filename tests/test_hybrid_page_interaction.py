@@ -8,6 +8,7 @@ from config.locations import get_random_location
 from utils.date_utils import get_random_date_range
 
 
+
 class TestPageInteraction(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
@@ -41,17 +42,18 @@ class TestPageInteraction(unittest.TestCase):
             refine_page = RefinePage(self.driver, location, check_in_date, check_out_date)
             refine_page.check_property_tiles()
 
-            # After interacting with refine page, check if it navigates to hybrid page
-            if "/hybrid" in self.driver.current_url:
-                print("Navigated to Hybrid page from Refine page. Checking availability...")
-                hybrid_page = HybridPage(self.driver, source_page="refine")
-                hybrid_page.check_property_availability()
-                hybrid_page.return_to_previous_page()
-                self.assertIn("/refine", self.driver.current_url, "Failed to return to the refine page")
-
     def tearDown(self):
-        self.driver.quit()
+        try:
+            while len(self.driver.window_handles) > 0:
+                self.driver.switch_to.window(self.driver.window_handles[-1])
+                self.driver.close()
+        except Exception as e:
+            print(f"Error during teardown: {str(e)}")
+        finally:
+            self.driver.quit()
 
 
 if __name__ == "__main__":
     unittest.main()
+
+

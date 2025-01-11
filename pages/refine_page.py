@@ -18,7 +18,17 @@ class RefinePage(BasePage):
         ensure_data_folder_exists()
         if not os.path.exists(EXCEL_FILE_PATH):
             create_excel_file()
-       
+
+    def cleanup_all_windows(self):
+        """Closes all browser windows."""
+        try:
+            print("Closing all browser windows...")
+            while len(self.driver.window_handles) > 0:
+                self.driver.switch_to.window(self.driver.window_handles[-1])
+                self.driver.close()
+            print("All browser windows closed.")
+        except Exception as e:
+            print(f"Error while closing browser windows: {str(e)}")
 
     def check_property_tiles(self):
         """
@@ -110,4 +120,4 @@ class RefinePage(BasePage):
         except Exception as e:
             print(f"Error during property tile check: {str(e)}")
         finally:
-            self.cleanup_and_quit()
+            self.cleanup_all_windows()  # Ensure all browser windows are closed
