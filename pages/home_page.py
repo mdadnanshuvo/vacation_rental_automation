@@ -1,5 +1,3 @@
-# pages/home_page.py
-
 from .base_page import BasePage
 from selenium.webdriver.common.by import By
 from config.locations import get_random_location
@@ -8,6 +6,7 @@ from .hybrid_page import HybridPage  # Import HybridPage
 from .refine_page import RefinePage  # Import RefinePage
 import random
 import time
+
 
 class HomePage(BasePage):
     def search_location(self):
@@ -53,72 +52,58 @@ class HomePage(BasePage):
 
     def select_dates(self, source_page="home"):
         try:
+            # Fetch random dates
             check_in_date, check_out_date = get_random_date_range()
             print(f"Generated dates - Check-in: {check_in_date}, Check-out: {check_out_date}")
             
-            # Wait for and click date input to open calendar
+            # Wait for and click the date input to open the calendar
             date_input = self.wait_for_element(
                 By.XPATH, 
                 "//input[@id='js-date-range-display']",
                 timeout=10
             )
             self.driver.execute_script("arguments[0].click();", date_input)
-            time.sleep(1.5)  # Increased wait time for calendar to fully load
-            
-            # Get check-in date components
+            time.sleep(1.5)  # Increased wait time for the calendar to fully load
+
+            # Get location
+            location = get_random_location()
+
+            # Select the dates on the calendar
             check_in_day = int(check_in_date.split('-')[2])
-            check_in_month = int(check_in_date.split('-')[1])
-            check_in_year = int(check_in_date.split('-')[0])
-            
-            # Get check-out date components
             check_out_day = int(check_out_date.split('-')[2])
-            check_out_month = int(check_out_date.split('-')[1])
-            check_out_year = int(check_out_date.split('-')[0])
             
-            # Select check-in date with more specific XPath
-            check_in_xpath = (
-                f"//td[contains(@class, 'datepicker__month-day--valid') and "
-                f"not(contains(@class, 'datepicker__month-day--disabled')) and "
-                f"normalize-space(text())='{check_in_day}'"
-                f"]"
-            )
-            
+            # XPath for dates
+            check_in_xpath = f"//td[contains(@class, 'datepicker__month-day--valid') and text()='{check_in_day}']"
+            check_out_xpath = f"//td[contains(@class, 'datepicker__month-day--valid') and text()='{check_out_day}']"
+
             check_in_element = self.wait_for_element(By.XPATH, check_in_xpath)
             self.driver.execute_script("arguments[0].click();", check_in_element)
             time.sleep(1)
-            
-            # Select check-out date with more specific XPath
-            check_out_xpath = (
-                f"//td[contains(@class, 'datepicker__month-day--valid') and "
-                f"not(contains(@class, 'datepicker__month-day--disabled')) and "
-                f"normalize-space(text())='{check_out_day}'"
-                f"]"
-            )
-            
+
             check_out_element = self.wait_for_element(By.XPATH, check_out_xpath)
             self.driver.execute_script("arguments[0].click();", check_out_element)
             time.sleep(1)
-            
-            # Click the continue button
+
+            # Confirm the date selection
             continue_button = self.wait_for_element(By.XPATH, "//button[@id='js-date-select']", timeout=10)
             self.driver.execute_script("arguments[0].click();", continue_button)
             time.sleep(1.5)
-            
-            # Check the page layout type
+
+            # Determine the page layout type
             page_layout = self.get_page_layout()
-            if page_layout == "Hybrid":
+            if page_layout == "Refine":
+                # Pass location and date range to RefinePage
+                refine_page = RefinePage(self.driver, location, check_in_date, check_out_date)
+                refine_page.check_property_tiles()
+            elif page_layout == "Hybrid":
                 hybrid_page = HybridPage(self.driver, source_page=source_page)
                 hybrid_page.check_property_availability()
                 hybrid_page.return_to_previous_page()
                 if source_page == "home":
                     self.filter_on_home_page()
-            elif page_layout == "Refine":
-                refine_page = RefinePage(self.driver)
-                refine_page.check_property_tiles()
-                
         except Exception as e:
             print(f"Error selecting dates: {str(e)}")
-            raise  # Re-raise the exception to handle it in the calling code
+            raise
 
     def get_page_layout(self):
         """Retrieve the page layout type using Scriptdata.pageLayout."""

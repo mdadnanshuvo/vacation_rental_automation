@@ -10,12 +10,15 @@ from utils.num_of_tiles import get_number_of_tiles  # Import the utility functio
 
 
 class RefinePage(BasePage):
-    def __init__(self, driver):
+    def __init__(self, driver, location, check_in_date, check_out_date):
         super().__init__(driver)
-        # Ensure the data folder and Excel file exist
+        self.location = location
+        self.check_in_date = check_in_date
+        self.check_out_date = check_out_date
         ensure_data_folder_exists()
         if not os.path.exists(EXCEL_FILE_PATH):
             create_excel_file()
+       
 
     def check_property_tiles(self):
         """
@@ -24,7 +27,7 @@ class RefinePage(BasePage):
         try:
             print("Fetching the total number of property tiles...")
             time.sleep(5)  # Allow time for the page to stabilize
-            
+
             # Fetch the total number of tiles using the utility function
             try:
                 total_tiles = get_number_of_tiles(self.driver)
@@ -32,7 +35,7 @@ class RefinePage(BasePage):
             except Exception as e:
                 print(f"Error fetching property tile count: {str(e)}")
                 total_tiles = 3  # Fallback to default
-            
+
             num_checked = 0
             while num_checked < total_tiles:
                 print(f"Waiting for property tiles to load... Checking tile {num_checked + 1} of {total_tiles}.")
@@ -47,7 +50,7 @@ class RefinePage(BasePage):
                 for tile in property_tiles:
                     if num_checked >= total_tiles:
                         break  # Stop if we’ve already checked all tiles
-                    
+
                     try:
                         href = tile.get_attribute("href")
                         title = tile.text
@@ -79,7 +82,13 @@ class RefinePage(BasePage):
                             f"The property '{title}' is {availability_status} in the specified date range."  # Comments
                         ]
 
-                        append_to_excel_file(data)
+                        additional_info = {
+                            "location": self.location,
+                            "check_in_date": self.check_in_date,
+                            "check_out_date": self.check_out_date
+                        }
+
+                        append_to_excel_file(data, additional_info)
 
                         print("Closing property window and returning to Refine page...")
                         time.sleep(5)  # Delay for smooth transition back
@@ -102,57 +111,3 @@ class RefinePage(BasePage):
             print(f"Error during property tile check: {str(e)}")
         finally:
             self.cleanup_and_quit()
-
-    def wait_for_elements(self, by, value, timeout=60):
-        """
-        Waits for the presence and visibility of multiple elements on the page.
-
-        Args:
-            by (selenium.webdriver.common.by.By): The type of locator (e.g., By.XPATH).
-            value (str): The locator value (e.g., the XPath string).
-            timeout (int): The timeout in seconds to wait for the elements.
-
-        Returns:
-            list: A list of located WebElements.
-
-        Raises:
-            Exception: If the elements cannot be located within the timeout period.
-        """
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-
-        try:
-            elements = WebDriverWait(self.driver, timeout).until(
-                EC.presence_of_all_elements_located((by, value))
-            )
-            WebDriverWait(self.driver, timeout).until(
-                EC.visibility_of_all_elements_located((by, value))
-            )
-            return elements
-        except Exception as e:
-            print(f"Error waiting for elements: {str(e)}")
-            raise
-
-    def cleanup_and_quit(self):
-        """
-        Cleans up by closing all browser windows and quitting the WebDriver session.
-        """
-        try:
-            print("Closing all browser windows...")
-            while len(self.driver.window_handles) > 0:
-                self.driver.switch_to.window(self.driver.window_handles[-1])
-                self.driver.close()
-            print("All browser windows closed.")
-        except InvalidSessionIdException as e:
-            print(f"Invalid session id: {str(e)}")
-        except Exception as e:
-            print(f"Error during cleanup: {str(e)}")
-        finally:
-            print("Ending the WebDriver session...")
-            try:
-                self.driver.quit()
-            except InvalidSessionIdException as e:
-                print(f"Invalid session id: {str(e)}")
-            except Exception as e:
-                print(f"Error quitting WebDriver: {str(e)}")
-            print("WebDriver session ended.")
