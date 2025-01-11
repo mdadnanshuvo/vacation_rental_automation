@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchWindowException
 import time
 from urllib.parse import urlparse
+from utils.scroll_utils import scroll_to_load_all_tiles  # Import the scroll utility
 from utils.excel_utils import append_to_excel_file, ensure_data_folder_exists, create_excel_file, EXCEL_FILE_PATH
 from utils.num_of_tiles import get_number_of_tiles  # Import the utility function
 
@@ -34,6 +35,10 @@ class RefinePage(BasePage):
             except Exception as e:
                 print(f"Error fetching property tile count: {str(e)}")
                 total_tiles = 10  # Fallback to default
+
+            # Scroll to load all tiles
+            print("Scrolling to load all property tiles...")
+            scroll_to_load_all_tiles(self.driver, delay=2)  # Use the utility function
 
             num_checked = 0
             checked_tiles = set()  # Track tiles already processed

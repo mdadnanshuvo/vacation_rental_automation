@@ -13,14 +13,16 @@ class TestPageInteraction(unittest.TestCase):
         self.driver.get(settings.BASE_URL)
 
     def test_check_property_availability_and_return(self):
-        home_page = HomePage(self.driver)
-        home_page.search_location()
-
+        # Generate location and random date range
         location = get_random_location()
         check_in_date, check_out_date = get_random_date_range()
+        print(f"Test Location: {location}")
         print(f"Test Date Range: Check-in: {check_in_date}, Check-out: {check_out_date}")
 
-        home_page.select_dates()
+        # Navigate to the home page and perform a search
+        home_page = HomePage(self.driver)
+        home_page.search_location(location)
+        home_page.select_dates(check_in_date, check_out_date)
         home_page.click_search_button()
 
         current_url = None
@@ -45,6 +47,10 @@ class TestPageInteraction(unittest.TestCase):
                 print("Browser session ended.")
         except Exception as e:
             print(f"Error during teardown: {str(e)}")
+
+
+if __name__ == "__main__":
+    unittest.main()
 
 
 if __name__ == "__main__":
