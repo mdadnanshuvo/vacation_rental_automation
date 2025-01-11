@@ -27,7 +27,7 @@ class TestPageInteraction(unittest.TestCase):
             self.assertIn(settings.BASE_URL, self.driver.current_url, "Failed to return to the home page")
         elif "/refine" in current_url:
             refine_page = RefinePage(self.driver)
-            refine_page.check_property_tiles(num_properties=1)
+            refine_page.check_property_tiles()
 
             # After interacting with refine page, check if it navigates to hybrid page
             if "/hybrid" in self.driver.current_url:
