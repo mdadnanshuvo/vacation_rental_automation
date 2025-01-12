@@ -136,4 +136,17 @@ The **Don't Repeat Yourself (DRY)** principle has been implemented throughout th
    cd vacation_rental_automation
    ```
 
-2. 
+2. Set up a virtual environment:
+   ```
+   python3 -m venv env
+   source env/bin/activate  # On Windows: env\Scripts\activate
+   ```
+3. Install the required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+## How to Run Tests
+1. Just run the main.py file:
+   ```
+   python main.py
+   ```
