@@ -43,7 +43,7 @@ Vacation Rental Automation is a Python-based test automation framework designed 
 ---
 
 ## Project Structure
-
+```
 vacation_rental_automation/
 ├── .vscode/                   # VSCode configuration files
 ├── config/                    # Configuration files
@@ -74,7 +74,7 @@ vacation_rental_automation/
 ├── main.py                    # Main application entry point
 ├── README.md                  # Project documentation
 ├── requirements.txt           # Python dependencies
-
+```
 
 
 ---
