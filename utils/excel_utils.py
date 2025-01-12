@@ -17,7 +17,7 @@ def create_excel_file():
     sheet = workbook.active
     sheet.title = "Test Results"
 
-    # Adding "Location" and "Date Range" explicitly to the Comments
+    # Define the column headers
     columns = ["Key", "Url", "Page", "Test Case", "Passed", "Comments"]
     for col_num, column_title in enumerate(columns, 1):
         col_letter = get_column_letter(col_num)
@@ -52,10 +52,13 @@ def append_to_excel_file(data, additional_info):
     check_in_date = additional_info.get("check_in_date", "Unknown Check-in Date")
     check_out_date = additional_info.get("check_out_date", "Unknown Check-out Date")
 
-    # Add location and date range details to comments
-    comments = data[5]  # Assuming the last element in `data` is the existing comment
-    comments += f" | Location: {location}, Dates: {check_in_date} to {check_out_date}"
-    data[5] = comments  # Update comments in the data list
+    # Format the additional details professionally
+    formatted_comment = (
+        f"{data[5]} | "
+        f"**Location:** {location} | "
+        f"**Date Range:** Check-in: {check_in_date}, Check-out: {check_out_date}"
+    )
+    data[5] = formatted_comment  # Update the comments in the data list
 
     # Append the updated data to the sheet
     sheet.append(data)

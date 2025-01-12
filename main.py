@@ -1,5 +1,5 @@
 import unittest
-from tests.test_hybrid_page_interaction import TestPageInteraction
+from tests.test_automation import TestPageInteraction
 
 if __name__ == "__main__":
     loader = unittest.TestLoader()
