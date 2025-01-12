@@ -1,4 +1,4 @@
-# config/locations.py
+# utils/locations.py
 
 from faker import Faker
 

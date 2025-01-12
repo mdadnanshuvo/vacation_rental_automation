@@ -1,6 +1,6 @@
 # pages/hybrid_page.py
 
-from .check_availability import PropertyPage  # Import PropertyPage from check_availability.py
+from utils.check_availability import PropertyPage  # Import PropertyPage from check_availability.py
 from selenium.webdriver.common.by import By
 from config.settings import BASE_URL
 import time

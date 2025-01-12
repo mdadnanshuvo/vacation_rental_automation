@@ -4,7 +4,7 @@ from config import settings
 from pages.home_page import HomePage
 from pages.hybrid_page import HybridPage
 from pages.refine_page import RefinePage
-from config.locations import get_random_location
+from utils.locations import get_random_location
 from utils.date_utils import get_random_date_range
 
 class TestPageInteraction(unittest.TestCase):
