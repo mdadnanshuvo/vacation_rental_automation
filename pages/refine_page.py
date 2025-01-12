@@ -11,7 +11,24 @@ from utils.num_of_tiles import get_number_of_tiles  # Import the utility functio
 
 
 class RefinePage(BasePage):
+
+    """
+    Represents the Refine Page of the application, providing methods to check property tiles,
+    log results, and handle interactions with Hybrid pages.
+
+    """
+
     def __init__(self, driver, location, check_in_date, check_out_date):
+        """
+        Initialize the RefinePage with location and date range details.
+
+        Args:
+            driver (WebDriver): The WebDriver instance controlling the browser.
+            location (str): The location selected for the search.
+            check_in_date (str): The check-in date in 'YYYY-MM-DD' format.
+            check_out_date (str): The check-out date in 'YYYY-MM-DD' format.
+
+        """
         super().__init__(driver)
         self.location = location
         self.check_in_date = check_in_date
@@ -23,6 +40,13 @@ class RefinePage(BasePage):
     def check_property_tiles(self):
         """
         Checks the availability of all property tiles on the Refine page and logs the results.
+
+        This method scrolls through the page to load all tiles, processes each tile to open
+        the associated Hybrid page, checks the availability of the property, and logs the results
+        in an Excel file.
+
+        Raises:
+            Exception: If an error occurs during the property tile check process.
         """
         try:
             print("Fetching the total number of property tiles...")
@@ -38,13 +62,15 @@ class RefinePage(BasePage):
 
             # Scroll to load all tiles
             print("Scrolling to load all property tiles...")
-            scroll_to_load_all_tiles(self.driver, delay=2)  # Use the utility function
+            # Use the utility function
+            scroll_to_load_all_tiles(self.driver, delay=2)
 
             num_checked = 0
             checked_tiles = set()  # Track tiles already processed
 
             while num_checked < total_tiles:
-                print(f"Waiting for property tiles to load... Checking tile {num_checked + 1} of {total_tiles}.")
+                print(f"Waiting for property tiles to load... Checking tile {
+                      num_checked + 1} of {total_tiles}.")
                 time.sleep(5)  # Allow tiles to load
 
                 # Fetch all currently visible tiles
@@ -71,17 +97,23 @@ class RefinePage(BasePage):
                         print(f"Opening property: {title} ({href})")
                         checked_tiles.add(href)  # Mark this tile as processed
                         time.sleep(5)  # Delay before opening the new tab
-                        self.driver.execute_script("window.open(arguments[0], '_blank');", href)
-                        self.driver.switch_to.window(self.driver.window_handles[-1])
+                        self.driver.execute_script(
+                            "window.open(arguments[0], '_blank');", href)
+                        self.driver.switch_to.window(
+                            self.driver.window_handles[-1])
 
                         print("Waiting for the Hybrid page to load...")
-                        time.sleep(5)  # Delay to allow the Hybrid page to stabilize
-                        self.wait_for_element(By.XPATH, "//div[@id='js-date-available'] | //div[@id='js-date-unavailable']", timeout=60)
+                        # Delay to allow the Hybrid page to stabilize
+                        time.sleep(5)
+                        self.wait_for_element(
+                            By.XPATH, "//div[@id='js-date-available'] | //div[@id='js-date-unavailable']", timeout=60)
 
-                        hybrid_page = HybridPage(self.driver, source_page="refine")
+                        hybrid_page = HybridPage(
+                            self.driver, source_page="refine")
                         availability = hybrid_page.check_property_availability()
                         availability_status = 'Available' if availability else 'Unavailable'
-                        print(f"Property availability for {title}: {availability_status}")
+                        print(f"Property availability for {
+                              title}: {availability_status}")
 
                         # Log results in Excel
                         data = [
@@ -90,7 +122,8 @@ class RefinePage(BasePage):
                             "Hybrid",  # Page
                             "Property available in date range",  # Test Case
                             availability,  # Passed
-                            f"The property '{title}' is {availability_status} in the specified date range."  # Comments
+                            f"The property '{title}' is {
+                                availability_status} in the specified date range."  # Comments
                         ]
 
                         additional_info = {
@@ -101,17 +134,21 @@ class RefinePage(BasePage):
 
                         append_to_excel_file(data, additional_info)
 
-                        print("Closing property window and returning to Refine page...")
+                        print(
+                            "Closing property window and returning to Refine page...")
                         time.sleep(5)  # Delay for smooth transition back
                         self.driver.close()
-                        self.driver.switch_to.window(self.driver.window_handles[0])
+                        self.driver.switch_to.window(
+                            self.driver.window_handles[0])
 
                         num_checked += 1
                     except Exception as e:
                         print(f"Error processing property tile: {str(e)}")
                         print("Waiting before retrying...")
                         time.sleep(10)  # Wait before retrying
-                        self.driver.switch_to.window(self.driver.window_handles[0])  # Ensure focus returns to the Refine page
+                        # Ensure focus returns to the Refine page
+                        self.driver.switch_to.window(
+                            self.driver.window_handles[0])
 
             print("Finished checking all property tiles.")
         except Exception as e:

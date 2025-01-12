@@ -5,9 +5,11 @@ import os
 
 EXCEL_FILE_PATH = "data/test_results.xlsx"
 
+
 def ensure_data_folder_exists():
     """Ensure the data folder exists."""
     os.makedirs(os.path.dirname(EXCEL_FILE_PATH), exist_ok=True)
+
 
 def create_excel_file():
     """Create a new Excel file with the specified columns."""
@@ -25,6 +27,7 @@ def create_excel_file():
 
     workbook.save(EXCEL_FILE_PATH)
     print(f"Excel file '{EXCEL_FILE_PATH}' created successfully.")
+
 
 def append_to_excel_file(data, additional_info):
     """
@@ -49,14 +52,17 @@ def append_to_excel_file(data, additional_info):
 
     # Extract additional information
     location = additional_info.get("location", "Unknown Location")
-    check_in_date = additional_info.get("check_in_date", "Unknown Check-in Date")
-    check_out_date = additional_info.get("check_out_date", "Unknown Check-out Date")
+    check_in_date = additional_info.get(
+        "check_in_date", "Unknown Check-in Date")
+    check_out_date = additional_info.get(
+        "check_out_date", "Unknown Check-out Date")
 
     # Format the additional details professionally
     formatted_comment = (
         f"{data[5]} | "
         f"**Location:** {location} | "
-        f"**Date Range:** Check-in: {check_in_date}, Check-out: {check_out_date}"
+        f"**Date Range:** Check-in: {
+            check_in_date}, Check-out: {check_out_date}"
     )
     data[5] = formatted_comment  # Update the comments in the data list
 
